@@ -161,6 +161,21 @@
             font-weight: bold;
         }
 
+        .peso-label {
+            display: block;
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .item-weight {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+            margin: 0 15px;
+        }
+
         .cart-item {
             background: #f8f9fa;
             padding: 15px;
@@ -332,6 +347,12 @@
             border: 1px solid #c3e6cb;
         }
 
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         .empty-cart {
             text-align: center;
             color: #999;
@@ -484,9 +505,24 @@
             <div id="productInfo" class="product-info">
                 <h3 id="productName"></h3>
                 <div id="productDetails"></div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
+
+                <div id="pzaControls" style="display: flex; gap: 10px; margin-top: 15px;">
                     <input type="number" id="qtyInput" min="1" max="999" value="1" style="width: 80px;">
                     <button class="btn btn-success" style="flex: 1;" onclick="addToCart()">➕ Agregar</button>
+                </div>
+
+                <div id="pesoControls" style="display: none; margin-top: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label class="peso-label">Peso (kg)</label>
+                            <input type="number" id="pesoKgInput" min="0" step="0.001" placeholder="0.000" style="width: 100%;" oninput="actualizarDesdeKg()">
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="peso-label">Precio ($)</label>
+                            <input type="number" id="pesoPrecioInput" min="0" step="0.01" placeholder="0.00" style="width: 100%;" oninput="actualizarDesdePrecio()">
+                        </div>
+                    </div>
+                    <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="addToCart()">➕ Agregar</button>
                 </div>
             </div>
         </div>
@@ -556,6 +592,9 @@
         let selectedProduct = null;
         let searchIndex = -1;
         let currentResults = [];
+        const CODIGOS_POR_PESO = new Set(['Z1', 'Z2', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15']);
+        let esPorPeso = false;
+        let ultimoCampoPeso = 'kg';
 
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
@@ -639,12 +678,16 @@
 
         function selectProduct(product) {
             selectedProduct = product;
+            esPorPeso = CODIGOS_POR_PESO.has(product.cbarras.toUpperCase());
+            ultimoCampoPeso = 'kg';
             document.getElementById('qtyInput').value = 1;
+            document.getElementById('pesoKgInput').value = '';
+            document.getElementById('pesoPrecioInput').value = '';
             document.getElementById('productName').textContent = product.nombre_producto;
-            
+
             let stockClass = product.existencia > 0 ? 'color: #28a745; font-weight: bold;' : 'color: #dc3545; font-weight: bold;';
             let stockText = product.existencia > 0 ? `✅ ${product.existencia} en stock` : '❌ Sin stock';
-            
+
             document.getElementById('productDetails').innerHTML = `
                 <div class="info-row">
                     <span class="info-label">Código:</span>
@@ -656,25 +699,52 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Precio:</span>
-                    <span class="price-highlight">$${product.precio_venta.toFixed(2)}</span>
+                    <span class="price-highlight">$${product.precio_venta.toFixed(2)}${esPorPeso ? ' /kg' : ''}</span>
                 </div>
             `;
-            
+
+            document.getElementById('pzaControls').style.display = esPorPeso ? 'none' : 'flex';
+            document.getElementById('pesoControls').style.display = esPorPeso ? 'block' : 'none';
             document.getElementById('productInfo').classList.add('active');
             document.getElementById('searchResults').classList.remove('active');
             document.getElementById('searchInput').value = '';
         }
 
+        function actualizarDesdeKg() {
+            ultimoCampoPeso = 'kg';
+            const kg = parseFloat(document.getElementById('pesoKgInput').value);
+            document.getElementById('pesoPrecioInput').value = isNaN(kg) ? '' : (kg * selectedProduct.precio_venta).toFixed(2);
+        }
+
+        function actualizarDesdePrecio() {
+            ultimoCampoPeso = 'precio';
+            const pesos = parseFloat(document.getElementById('pesoPrecioInput').value);
+            document.getElementById('pesoKgInput').value = isNaN(pesos) ? '' : (pesos / selectedProduct.precio_venta).toFixed(3);
+        }
+
         function addToCart() {
             if (!selectedProduct) return;
 
-            const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-            const existingItem = cart.find(item => item.cbarras === selectedProduct.cbarras);
-            
-            if (existingItem) {
-                existingItem.quantity += qty;
+            let quantity;
+
+            if (esPorPeso) {
+                quantity = ultimoCampoPeso === 'precio'
+                    ? (parseFloat(document.getElementById('pesoPrecioInput').value) || 0) / selectedProduct.precio_venta
+                    : (parseFloat(document.getElementById('pesoKgInput').value) || 0);
+                if (quantity <= 0) {
+                    showMessage('⚠️ Ingresa un peso o precio válido', 'error');
+                    return;
+                }
             } else {
-                cart.push({ ...selectedProduct, quantity: qty });
+                quantity = parseInt(document.getElementById('qtyInput').value) || 1;
+            }
+
+            const existingItem = cart.find(item => item.cbarras === selectedProduct.cbarras && item.porPeso === esPorPeso);
+
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ ...selectedProduct, quantity, porPeso: esPorPeso });
             }
 
             updateCart();
@@ -704,11 +774,15 @@
                         <div class="item-name">${item.nombre_producto}</div>
                         <div class="item-price">$${(item.precio_venta * item.quantity).toFixed(2)}</div>
                     </div>
-                    <div class="item-qty">
-                        <button class="qty-btn" onclick="updateQuantity(${index}, -1)">−</button>
-                        <span style="min-width: 30px; text-align: center; font-weight: bold;">${item.quantity}</span>
-                        <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                    </div>
+                    ${item.porPeso ? `
+                        <span class="item-weight">${item.quantity.toFixed(3)} kg</span>
+                    ` : `
+                        <div class="item-qty">
+                            <button class="qty-btn" onclick="updateQuantity(${index}, -1)">−</button>
+                            <span style="min-width: 30px; text-align: center; font-weight: bold;">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                        </div>
+                    `}
                     <button class="btn-remove" onclick="removeFromCart(${index})">🗑️</button>
                 </div>
             `).join('');
@@ -755,6 +829,7 @@
                     codigo: item.cbarras,
                     nombre: item.nombre_producto,
                     cantidad: item.quantity,
+                    unidad: item.porPeso ? 'kg' : 'pza',
                     precio: item.precio_venta,
                     subtotal: item.precio_venta * item.quantity
                 }))
@@ -782,7 +857,7 @@
                                 <span>${venta.fecha} ${venta.hora}</span>
                             </div>
                             <div class="venta-details">
-                                ${venta.detalles.map(d => `${d.cantidad}x ${d.nombre}`).join(', ')}
+                                ${venta.detalles.map(d => d.unidad === 'kg' ? `${d.cantidad.toFixed(3)} kg ${d.nombre}` : `${d.cantidad}x ${d.nombre}`).join(', ')}
                             </div>
                             <div class="venta-total">Total: $${venta.total.toFixed(2)}</div>
                         </div>
@@ -825,17 +900,19 @@
                 return;
             }
 
-            let csv = 'FECHA,HORA,CÓDIGO,PRODUCTO,CANTIDAD,PRECIO,SUBTOTAL\n';
+            let csv = 'FECHA,HORA,CÓDIGO,PRODUCTO,CANTIDAD,UNIDAD,PRECIO,SUBTOTAL\n';
             let totalGeneral = 0;
 
             ventas.forEach(venta => {
                 venta.detalles.forEach(item => {
-                    csv += `${venta.fecha},${venta.hora},"${item.codigo}","${item.nombre}",${item.cantidad},"$${item.precio.toFixed(2)}","$${item.subtotal.toFixed(2)}"\n`;
+                    const unidad = item.unidad || 'pza';
+                    const cantidad = unidad === 'kg' ? item.cantidad.toFixed(3) : item.cantidad;
+                    csv += `${venta.fecha},${venta.hora},"${item.codigo}","${item.nombre}",${cantidad},${unidad},"$${item.precio.toFixed(2)}","$${item.subtotal.toFixed(2)}"\n`;
                     totalGeneral += item.subtotal;
                 });
             });
 
-            csv += `\nTOTAL GENERAL,,,,,,"$${totalGeneral.toFixed(2)}"\n`;
+            csv += `\nTOTAL GENERAL,,,,,,,"$${totalGeneral.toFixed(2)}"\n`;
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
