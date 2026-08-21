@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auxiliar Temporal Akasia - Punto de Venta</title>
     <style>
+        :root {
+            --accent: #4f46e5;
+            --accent-dark: #3730a3;
+            --ok: #16a34a;
+            --danger: #dc2626;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,124 +24,133 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, 'Segoe UI', Roboto, Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            padding: 25px;
         }
 
         .header {
-            text-align: center;
+            background: var(--accent);
             color: white;
-            margin-bottom: 20px;
-            grid-column: 1 / -1;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .header-title {
-            flex: 1;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1500;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 5px;
+            font-size: 1.25em;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
         .header-buttons {
             display: flex;
-            gap: 10px;
+            gap: 4px;
         }
 
         .header-btn {
-            background: rgba(255, 255, 255, 0.2);
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.12);
             color: white;
-            border: 2px solid white;
-            padding: 10px 15px;
-            border-radius: 6px;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
+            font-size: 1.1em;
+            line-height: 1;
+            transition: background 0.15s;
         }
 
-        .header-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .header-btn:hover, .header-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            min-width: 0;
         }
 
         h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.4em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            font-size: 0.8em;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         .search-container {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             position: relative;
         }
 
         input[type="text"], input[type="number"] {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
+            padding: 14px;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 1em;
+            font-size: 1.05em;
+            background: var(--bg);
         }
 
         input[type="text"]:focus, input[type="number"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent);
+            background: white;
         }
 
         .search-input {
             flex: 1;
-            min-width: 250px;
-            border-radius: 8px 0 0 8px;
+            min-width: 0;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 14px 20px;
             border: none;
             border-radius: 8px;
             font-size: 1em;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: filter 0.15s;
+            min-height: 48px;
+        }
+
+        .btn:hover {
+            filter: brightness(0.95);
         }
 
         .btn-success {
-            background: #28a745;
+            background: var(--ok);
             color: white;
         }
 
-        .btn-success:hover {
-            background: #218838;
-        }
-
         .product-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 5px solid #667eea;
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
             display: none;
         }
 
@@ -138,26 +159,30 @@
         }
 
         .product-info h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.3em;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-size: 1.15em;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
         }
 
         .info-label {
             font-weight: 600;
-            color: #667eea;
+            color: var(--text-muted);
         }
 
         .price-highlight {
-            font-size: 1.5em;
-            color: #28a745;
+            font-size: 1.4em;
+            color: var(--ok);
             font-weight: bold;
         }
 
@@ -177,86 +202,89 @@
         }
 
         .cart-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 10px;
+            background: var(--bg);
+            padding: 12px;
+            margin-bottom: 8px;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #667eea;
+            gap: 8px;
         }
 
         .item-details {
             flex: 1;
+            min-width: 0;
         }
 
         .item-name {
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            color: var(--text);
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .item-price {
-            color: #28a745;
+            color: var(--ok);
             font-weight: bold;
         }
 
         .item-qty {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 0 15px;
+            gap: 6px;
         }
 
         .qty-btn {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #ddd;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
             background: white;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1.1em;
         }
 
         .qty-btn:hover {
-            background: #667eea;
+            background: var(--accent);
+            border-color: var(--accent);
             color: white;
         }
 
         .btn-remove {
-            background: #dc3545;
-            color: white;
+            background: transparent;
+            color: var(--danger);
             border: none;
-            padding: 8px 12px;
+            padding: 8px;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 1.1em;
         }
 
         .btn-remove:hover {
-            background: #c82333;
+            background: #fee2e2;
         }
 
         .cart-summary {
-            background: #f0f0f0;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
             font-size: 1.1em;
         }
 
         .summary-row.total {
-            border-top: 2px solid #333;
-            padding-top: 10px;
-            font-size: 1.3em;
+            font-size: 1.5em;
             font-weight: bold;
-            color: #28a745;
+            color: var(--ok);
         }
 
         .search-results {
@@ -264,14 +292,14 @@
             top: 100%;
             left: 0;
             right: 0;
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border);
             border-top: none;
             border-radius: 0 0 8px 8px;
             display: none;
             background: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
 
@@ -280,18 +308,17 @@
         }
 
         .result-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.2s;
+            transition: background-color 0.15s;
         }
 
         .result-item:hover, .result-item.highlighted {
-            background: #e8eef7;
-            color: #667eea;
+            background: #eef2ff;
         }
 
         .result-item:last-child {
@@ -300,22 +327,24 @@
 
         .result-info {
             flex: 1;
+            min-width: 0;
         }
 
         .result-name {
             font-weight: 600;
-            color: #333;
+            color: var(--text);
         }
 
         .result-barcode {
             font-size: 0.85em;
-            color: #999;
+            color: var(--text-muted);
         }
 
         .result-price {
-            color: #28a745;
+            color: var(--ok);
             font-weight: bold;
             margin-left: 10px;
+            white-space: nowrap;
         }
 
         .message {
@@ -342,9 +371,8 @@
         }
 
         .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .message.error {
@@ -355,7 +383,7 @@
 
         .empty-cart {
             text-align: center;
-            color: #999;
+            color: var(--text-muted);
             padding: 40px 20px;
         }
 
@@ -368,6 +396,12 @@
 
         .btn-group .btn {
             flex: 1;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
         }
 
         .modal {
@@ -390,7 +424,7 @@
         .modal-content {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 24px;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
@@ -402,90 +436,82 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
         .modal-header h2 {
             margin: 0;
-            border: none;
-            padding: 0;
+            font-size: 1em;
         }
 
         .close-btn {
-            background: #dc3545;
-            color: white;
+            background: var(--bg);
+            color: var(--text);
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.2em;
+            font-size: 1.1em;
         }
 
         .close-btn:hover {
-            background: #c82333;
+            background: var(--border);
         }
 
         .venta-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 15px;
+            background: var(--bg);
+            padding: 14px;
+            margin-bottom: 10px;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
         }
 
         .venta-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: bold;
         }
 
         .venta-details {
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-muted);
         }
 
         .venta-total {
-            color: #28a745;
+            color: var(--ok);
             font-weight: bold;
             font-size: 1.1em;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .no-ventas {
             text-align: center;
-            color: #999;
+            color: var(--text-muted);
             padding: 20px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
+                padding: 12px;
+                gap: 12px;
             }
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .header-buttons {
-                width: 100%;
-            }
-            .header-btn {
-                flex: 1;
+            .header h1 {
+                font-size: 1.1em;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="header-title">
-            <h1>🌮 Auxiliar Temporal Akasia</h1>
-        </div>
+        <h1>🌮 Auxiliar Temporal Akasia</h1>
         <div class="header-buttons">
-            <button class="header-btn" onclick="verVentas()">📊 Ver Ventas</button>
-            <button class="header-btn" onclick="descargarVentas()">💾 Descargar CSV</button>
-            <button class="header-btn" onclick="reiniciarVentas()">🔄 Reiniciar</button>
+            <button class="header-btn" onclick="verVentas()" title="Ver ventas">📊</button>
+            <button class="header-btn" onclick="descargarVentas()" title="Descargar CSV">💾</button>
+            <button class="header-btn" onclick="reiniciarVentas()" title="Reiniciar historial">🔄</button>
         </div>
     </div>
 
@@ -547,7 +573,7 @@
 
                 <div class="btn-group">
                     <button class="btn btn-success" onclick="registerSale()">✅ Venta</button>
-                    <button class="btn" style="background: #f0f0f0; color: #333;" onclick="clearCart()">🗑️ Vaciar</button>
+                    <button class="btn btn-secondary" onclick="clearCart()">🗑️ Vaciar</button>
                 </div>
             </div>
         </div>
