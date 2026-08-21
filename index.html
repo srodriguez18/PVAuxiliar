@@ -547,7 +547,7 @@
                 }
 
                 currentResults = products.filter(p =>
-                    p.cbarras.includes(query) || 
+                    p.cbarras.toLowerCase().includes(query) ||
                     p.nombre_producto.toLowerCase().includes(query)
                 ).slice(0, 15);
 
