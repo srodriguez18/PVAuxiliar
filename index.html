@@ -573,8 +573,9 @@
                     updateHighlight(items);
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (searchIndex >= 0 && items[searchIndex]) {
-                        items[searchIndex].click();
+                    const targetIndex = searchIndex >= 0 ? searchIndex : 0;
+                    if (items[targetIndex]) {
+                        items[targetIndex].click();
                     }
                 } else if (e.key === 'Escape') {
                     resultsDiv.classList.remove('active');
