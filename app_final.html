@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akasia Tortillería - Punto de Venta</title>
+    <title>Auxiliar Temporal Akasia - Punto de Venta</title>
     <style>
         * {
             margin: 0;
@@ -459,7 +459,7 @@
 <body>
     <div class="header">
         <div class="header-title">
-            <h1>🌮 Akasia</h1>
+            <h1>🌮 Auxiliar Temporal Akasia</h1>
         </div>
         <div class="header-buttons">
             <button class="header-btn" onclick="verVentas()">📊 Ver Ventas</button>
@@ -525,6 +525,27 @@
                 <button class="close-btn" onclick="cerrarModal()">✕</button>
             </div>
             <div id="ventasContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para reiniciar ventas -->
+    <div id="confirmResetModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>⚠️ Reiniciar historial de ventas</h2>
+                <button class="close-btn" onclick="cerrarConfirmReset()">✕</button>
+            </div>
+            <p style="margin-bottom: 12px;">Estás a punto de <strong>borrar permanentemente</strong> todas las ventas guardadas en este dispositivo. Esta acción no se puede deshacer.</p>
+            <p style="margin-bottom: 8px;">Antes de continuar, asegúrate de:</p>
+            <ul style="margin: 0 0 16px 20px; padding: 0;">
+                <li>Haber capturado estas ventas en el sistema Akasia, o</li>
+                <li>Haber descargado el archivo CSV/Excel con el botón 💾 Descargar CSV</li>
+            </ul>
+            <p style="margin-bottom: 20px; font-weight: 600; color: #dc3545;">Si no lo haces, esta información se perderá y no se podrá recuperar.</p>
+            <div class="btn-group">
+                <button class="btn" style="background: #f0f0f0; color: #333;" onclick="cerrarConfirmReset()">Cancelar</button>
+                <button class="btn" style="background: #dc3545; color: white;" onclick="confirmarReinicio()">🗑️ Sí, borrar todo</button>
+            </div>
         </div>
     </div>
 
@@ -783,10 +804,17 @@
                 alert('No hay ventas registradas');
                 return;
             }
-            if (confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) {
-                localStorage.removeItem('ventas');
-                showMessage('🔄 Historial de ventas reiniciado', 'success');
-            }
+            document.getElementById('confirmResetModal').classList.add('active');
+        }
+
+        function cerrarConfirmReset() {
+            document.getElementById('confirmResetModal').classList.remove('active');
+        }
+
+        function confirmarReinicio() {
+            localStorage.removeItem('ventas');
+            cerrarConfirmReset();
+            showMessage('🔄 Historial de ventas reiniciado', 'success');
         }
 
         function descargarVentas() {
