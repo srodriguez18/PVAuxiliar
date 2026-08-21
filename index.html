@@ -161,34 +161,12 @@
             font-weight: bold;
         }
 
-        .mode-toggle {
-            display: flex;
-            gap: 6px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
+        .peso-label {
+            display: block;
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 4px;
             font-weight: 600;
-            font-size: 0.9em;
-            color: #666;
-            transition: all 0.2s;
-        }
-
-        .mode-btn.active {
-            background: #667eea;
-            border-color: #667eea;
-            color: white;
-        }
-
-        .peso-equivalente {
-            margin-top: 8px;
-            color: #666;
-            font-size: 0.9em;
         }
 
         .item-weight {
@@ -528,26 +506,23 @@
                 <h3 id="productName"></h3>
                 <div id="productDetails"></div>
 
-                <div class="mode-toggle">
-                    <button type="button" class="mode-btn active" id="modoPzaBtn" onclick="setModo('pieza')">🔢 Por pieza</button>
-                    <button type="button" class="mode-btn" id="modoPesoBtn" onclick="setModo('peso')">⚖️ Por peso</button>
-                </div>
-
-                <div id="pzaControls" style="display: flex; gap: 10px; margin-top: 12px;">
+                <div id="pzaControls" style="display: flex; gap: 10px; margin-top: 15px;">
                     <input type="number" id="qtyInput" min="1" max="999" value="1" style="width: 80px;">
                     <button class="btn btn-success" style="flex: 1;" onclick="addToCart()">➕ Agregar</button>
                 </div>
 
-                <div id="pesoControls" style="display: none; margin-top: 12px;">
-                    <div class="mode-toggle">
-                        <button type="button" class="mode-btn active" id="subModoKgBtn" onclick="setSubModo('kg')">Kilogramos</button>
-                        <button type="button" class="mode-btn" id="subModoPrecioBtn" onclick="setSubModo('precio')">Precio ($)</button>
+                <div id="pesoControls" style="display: none; margin-top: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label class="peso-label">Peso (kg)</label>
+                            <input type="number" id="pesoKgInput" min="0" step="0.001" placeholder="0.000" style="width: 100%;" oninput="actualizarDesdeKg()">
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="peso-label">Precio ($)</label>
+                            <input type="number" id="pesoPrecioInput" min="0" step="0.01" placeholder="0.00" style="width: 100%;" oninput="actualizarDesdePrecio()">
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="number" id="pesoInput" min="0" step="0.001" placeholder="Kg" style="flex: 1;" oninput="actualizarEquivalente()">
-                        <button class="btn btn-success" style="flex: 1;" onclick="addToCart()">➕ Agregar</button>
-                    </div>
-                    <div id="pesoEquivalente" class="peso-equivalente"></div>
+                    <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="addToCart()">➕ Agregar</button>
                 </div>
             </div>
         </div>
@@ -596,8 +571,9 @@
         let selectedProduct = null;
         let searchIndex = -1;
         let currentResults = [];
-        let modo = 'pieza';
-        let subModo = 'kg';
+        const CODIGOS_POR_PESO = new Set(['Z1', 'Z2', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15']);
+        let esPorPeso = false;
+        let ultimoCampoPeso = 'kg';
 
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
@@ -681,8 +657,11 @@
 
         function selectProduct(product) {
             selectedProduct = product;
+            esPorPeso = CODIGOS_POR_PESO.has(product.cbarras.toUpperCase());
+            ultimoCampoPeso = 'kg';
             document.getElementById('qtyInput').value = 1;
-            document.getElementById('pesoInput').value = '';
+            document.getElementById('pesoKgInput').value = '';
+            document.getElementById('pesoPrecioInput').value = '';
             document.getElementById('productName').textContent = product.nombre_producto;
 
             let stockClass = product.existencia > 0 ? 'color: #28a745; font-weight: bold;' : 'color: #dc3545; font-weight: bold;';
@@ -699,76 +678,52 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Precio:</span>
-                    <span class="price-highlight">$${product.precio_venta.toFixed(2)}</span>
+                    <span class="price-highlight">$${product.precio_venta.toFixed(2)}${esPorPeso ? ' /kg' : ''}</span>
                 </div>
             `;
 
-            setModo('pieza');
+            document.getElementById('pzaControls').style.display = esPorPeso ? 'none' : 'flex';
+            document.getElementById('pesoControls').style.display = esPorPeso ? 'block' : 'none';
             document.getElementById('productInfo').classList.add('active');
             document.getElementById('searchResults').classList.remove('active');
             document.getElementById('searchInput').value = '';
         }
 
-        function setModo(nuevoModo) {
-            modo = nuevoModo;
-            document.getElementById('modoPzaBtn').classList.toggle('active', modo === 'pieza');
-            document.getElementById('modoPesoBtn').classList.toggle('active', modo === 'peso');
-            document.getElementById('pzaControls').style.display = modo === 'pieza' ? 'flex' : 'none';
-            document.getElementById('pesoControls').style.display = modo === 'peso' ? 'block' : 'none';
-            if (modo === 'peso') {
-                setSubModo('kg');
-            }
+        function actualizarDesdeKg() {
+            ultimoCampoPeso = 'kg';
+            const kg = parseFloat(document.getElementById('pesoKgInput').value);
+            document.getElementById('pesoPrecioInput').value = isNaN(kg) ? '' : (kg * selectedProduct.precio_venta).toFixed(2);
         }
 
-        function setSubModo(nuevoSubModo) {
-            subModo = nuevoSubModo;
-            document.getElementById('subModoKgBtn').classList.toggle('active', subModo === 'kg');
-            document.getElementById('subModoPrecioBtn').classList.toggle('active', subModo === 'precio');
-            document.getElementById('pesoInput').placeholder = subModo === 'kg' ? 'Kg' : '$';
-            document.getElementById('pesoInput').value = '';
-            document.getElementById('pesoEquivalente').textContent = '';
-        }
-
-        function actualizarEquivalente() {
-            if (!selectedProduct) return;
-            const val = parseFloat(document.getElementById('pesoInput').value) || 0;
-            const equivDiv = document.getElementById('pesoEquivalente');
-            if (val <= 0) {
-                equivDiv.textContent = '';
-                return;
-            }
-            if (subModo === 'kg') {
-                equivDiv.textContent = `≈ $${(val * selectedProduct.precio_venta).toFixed(2)}`;
-            } else {
-                const kg = selectedProduct.precio_venta > 0 ? val / selectedProduct.precio_venta : 0;
-                equivDiv.textContent = `≈ ${kg.toFixed(3)} kg`;
-            }
+        function actualizarDesdePrecio() {
+            ultimoCampoPeso = 'precio';
+            const pesos = parseFloat(document.getElementById('pesoPrecioInput').value);
+            document.getElementById('pesoKgInput').value = isNaN(pesos) ? '' : (pesos / selectedProduct.precio_venta).toFixed(3);
         }
 
         function addToCart() {
             if (!selectedProduct) return;
 
-            let quantity, porPeso;
+            let quantity;
 
-            if (modo === 'pieza') {
-                quantity = parseInt(document.getElementById('qtyInput').value) || 1;
-                porPeso = false;
-            } else {
-                const val = parseFloat(document.getElementById('pesoInput').value) || 0;
-                if (val <= 0) {
-                    showMessage('⚠️ Ingresa un peso o monto válido', 'error');
+            if (esPorPeso) {
+                quantity = ultimoCampoPeso === 'precio'
+                    ? (parseFloat(document.getElementById('pesoPrecioInput').value) || 0) / selectedProduct.precio_venta
+                    : (parseFloat(document.getElementById('pesoKgInput').value) || 0);
+                if (quantity <= 0) {
+                    showMessage('⚠️ Ingresa un peso o precio válido', 'error');
                     return;
                 }
-                quantity = subModo === 'kg' ? val : (selectedProduct.precio_venta > 0 ? val / selectedProduct.precio_venta : 0);
-                porPeso = true;
+            } else {
+                quantity = parseInt(document.getElementById('qtyInput').value) || 1;
             }
 
-            const existingItem = cart.find(item => item.cbarras === selectedProduct.cbarras && item.porPeso === porPeso);
+            const existingItem = cart.find(item => item.cbarras === selectedProduct.cbarras && item.porPeso === esPorPeso);
 
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
-                cart.push({ ...selectedProduct, quantity, porPeso });
+                cart.push({ ...selectedProduct, quantity, porPeso: esPorPeso });
             }
 
             updateCart();
