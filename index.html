@@ -464,6 +464,7 @@
         <div class="header-buttons">
             <button class="header-btn" onclick="verVentas()">📊 Ver Ventas</button>
             <button class="header-btn" onclick="descargarVentas()">💾 Descargar CSV</button>
+            <button class="header-btn" onclick="reiniciarVentas()">🔄 Reiniciar</button>
         </div>
     </div>
 
@@ -773,6 +774,18 @@
 
         function cerrarModal() {
             document.getElementById('ventasModal').classList.remove('active');
+        }
+
+        function reiniciarVentas() {
+            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+            if (ventas.length === 0) {
+                alert('No hay ventas registradas');
+                return;
+            }
+            if (confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) {
+                localStorage.removeItem('ventas');
+                showMessage('🔄 Historial de ventas reiniciado', 'success');
+            }
         }
 
         function descargarVentas() {
